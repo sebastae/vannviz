@@ -87,7 +87,9 @@
         </table>
 
         <script>
-            const API_KEY = "API_KEY_HERE";
+            const params = new URLSearchParams(window.location.search);
+
+            const API_KEY = params.get("key");
             const table = document.querySelector("#table");
 
             const stations = {
