@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="no">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Vannføring</title>
+        <style>
+            :root {
+                --border: 3px solid white;
+            }
+
+            html {
+                color: white;
+                background-color: black;
+                font-family: Helvetica, Arial, sans-serif;
+                font-size: 5.5em;
+            }
+
+            html,
+            body {
+                padding: 0;
+                margin: 0;
+            }
+
+            td,
+            th {
+                padding: 12px;
+            }
+
+            tbody tr {
+                border-top: var(--border);
+            }
+
+            thead th:first-child,
+            .label {
+                border-right: var(--border);
+            }
+
+            .label {
+                font-weight: 600;
+                padding-right: 20px;
+            }
+
+            table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+
+            .data {
+                display: flex;
+            }
+
+            .observation {
+                font-size: .7em;
+                display: flex;
+                
+                width: 100%;
+            }
+
+            .observation-time {
+                font-size: 0.3em;
+            }
+
+            .arrow {
+                font-size: 0.5em;
+                padding-left: 5px;
+            }
+
+            .arrow.rising {
+                color: red;
+            }
+
+            .arrow.sinking {
+                color: green;
+            }
+        </style>
+    </head>
+    <body>
+        <table>
+            <thead>
+                <tr>
+                    <th>Elv</th>
+                    <th>Vannføring</th>
+                </tr>
+            </thead>
+            <tbody id="table"></tbody>
+        </table>
+
+        <script>
+            const API_KEY = "API_KEY_HERE";
+            const table = document.querySelector("#table");
+
+            const stations = {
+                "123.20.0": "Nidelva",
+                "122.9.0": "Gaula",
+                "121.22.0": "Orkla",
+                "124.12.0": "Stjørdalselva",
+            };
+
+            const directions = {
+                "-1": "sinking",
+                0: "equal",
+                1: "rising",
+            };
+
+
+            const decimals = 1;
+            const magnitude = Math.pow(10, decimals);
+            const nObservations = 2;
+
+            const fSize = (1/nObservations) + 0.3;
+
+            const stationString = Object.keys(stations).join(",");
+
+            const parameters = {
+                StationId: stationString,
+                Parameter: '1001',
+                ResolutionTime: 0,
+                ReferenceTime: 'P1D/'
+            }
+
+            const queryParameters = Object.entries(parameters).map(([key, value]) => `${key}=${value}`).join('&')
+
+            function update() {
+                fetch(
+                    `https://hydapi.nve.no/api/v1/Observations?${queryParameters}`,
+                    {
+                        headers: {
+                            "X-API-Key": API_KEY,
+                            Accept: "application/json",
+                        },
+                    }
+                ).then((response) => {
+                    response.json().then((data) => {
+                        table.innerHTML = "";
+
+                        data.data.forEach((d) => {
+
+                            var observations = []
+                            for (let i = 1; i <= nObservations; i++) {
+                                observations.push(d.observations[d.observations.length - i])
+                            }
+
+                            const oData = observations.map(o => ({
+                                value: `${Math.floor(o.value * magnitude)/magnitude}${d.unit}`,
+                                time: new Date(o.time).toLocaleTimeString().substring(0, 5)
+                            })).reverse()
+
+                            const row = document.createElement("tr");
+
+                            const nameCell = document.createElement("td");
+                            nameCell.textContent = stations[d.stationId];
+                            nameCell.classList.add("label");
+
+                            const valueCell = document.createElement("td");
+
+                            
+
+                            valueCell.innerHTML = `
+                                <div class="data">
+                                    ${oData.map(o => `
+                                        <div class="observation">
+                                            <div class="observation-value" style="font-size: ${fSize}em">${o.value}</div>
+                                            <div class="observation-time">(${o.time})</div>
+                                        </div>`).join('')}
+                                </div>
+                                `;
+
+                            row.appendChild(nameCell);
+                            row.appendChild(valueCell);
+
+                            table.appendChild(row);
+                        });
+                    });
+                });
+            }
+
+            update();
+            //window.setInterval(update, 5 * 1000);
+        </script>
+    </body>
+</html>
