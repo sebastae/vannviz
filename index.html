@@ -107,7 +107,6 @@
 
 
             const decimals = 1;
-            const magnitude = Math.pow(10, decimals);
             const nObservations = 2;
 
             const fSize = (1/nObservations) + 0.3;
@@ -144,7 +143,7 @@
                             }
 
                             const oData = observations.map(o => ({
-                                value: `${Math.floor(o.value * magnitude)/magnitude}${d.unit}`,
+                                value: `${o.value.toFixed(decimals)}${d.unit}`,
                                 time: new Date(o.time).toLocaleTimeString().substring(0, 5)
                             })).reverse()
 
