@@ -6,14 +6,26 @@
         <title>Vannføring</title>
         <style>
             :root {
-                --border: 3px solid white;
+                --border: 3px solid black;
             }
 
+
+
+            
+
             html {
-                color: white;
-                background-color: black;
+                color: black;
+                background-color: white;
                 font-family: Helvetica, Arial, sans-serif;
                 font-size: 5.5em;
+
+                
+            }
+
+            html.dark {
+                color: white;
+                background-color: black;
+                --border: 3px solid white;
             }
 
             html,
@@ -58,7 +70,7 @@
             }
 
             .observation-time {
-                font-size: 0.3em;
+                font-size: 0.5em;
             }
 
             .arrow {
@@ -74,6 +86,13 @@
                 color: green;
             }
         </style>
+        <script>
+            const p = new URLSearchParams(window.location.search);
+            const dark_theme = p.get("theme") == "dark";
+            if (dark_theme) {
+                document.querySelector("html").classList.add("dark")
+            }
+        </script>
     </head>
     <body>
         <table>
